@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Sistema de Inventario de Stock</title>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --background: #f1f5f9;
+            --card: #ffffff;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #dbe3ec;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        /* CONTENEDOR PRINCIPAL */
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 25px 0;
+        }
+
+        /* ENCABEZADO */
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 55px;
+            height: 55px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 28px;
+        }
+
+        h1 {
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-top: 5px;
+        }
+
+        .system-status {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 10px 15px;
+            border-radius: 20px;
+            color: var(--success);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* ESTADÍSTICAS */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .stat-card span {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .stat-card strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 28px;
+        }
+
+        /* CONTENIDO */
+
+        .content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 18px;
+        }
+
+        .form-container {
+            padding: 20px;
+        }
+
+        /* FORMULARIO */
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--muted);
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            border-radius: 9px;
+            padding: 11px 15px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text);
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* INVENTARIO */
+
+        .inventory {
+            padding: 20px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search {
+            flex: 1;
+        }
+
+        .category-filter {
+            width: 200px;
+        }
+
+        /* TABLA */
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th,
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .sku {
+            font-weight: bold;
+        }
+
+        .stock {
+            font-weight: bold;
+        }
+
+        /* ESTADOS */
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .available {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .low-stock {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .out-stock {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* BOTONES DE TABLA */
+
+        .action-button {
+            padding: 7px 9px;
+            margin-right: 5px;
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .action-button:hover {
+            background: #e2e8f0;
+        }
+
+        /* MENSAJE VACÍO */
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+        }
+
+        /* PIE */
+
+        footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+
+            .content {
+                grid-template-columns: 1fr;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .container {
+                width: 92%;
+            }
+
+            header {
+                align-items: flex-start;
+            }
+
+            .system-status {
+                display: none;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .category-filter {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ENCABEZADO -->
+
+    <header>
+
+        <div class="brand">
+
+            <div class="logo">
+                📦
+            </div>
+
+            <div>
+                <h1>Inventario de Stock</h1>
+
+                <p class="subtitle">
+                    Sistema de gestión de artículos y existencias
+                </p>
+            </div>
+
+        </div>
+
+        <div class="system-status">
+            ● Sistema activo
+        </div>
+
+    </header>
+
+
+    <!-- ESTADÍSTICAS -->
+
+    <section class="stats">
+
+        <div class="stat-card">
+            <span>TOTAL DE ARTÍCULOS</span>
+            <strong id="totalArticles">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>UNIDADES EN STOCK</span>
+            <strong id="totalUnits">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>STOCK BAJO</span>
+            <strong id="lowStock">0</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>VALOR DEL INVENTARIO</span>
+            <strong id="inventoryValue">S/ 0.00</strong>
+        </div>
+
+    </section>
+
+
+    <!-- CONTENIDO -->
+
+    <section class="content">
+
+        <!-- FORMULARIO -->
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h2 id="formTitle">
+                    Registrar artículo
+                </h2>
+
+                <span id="editLabel"
+                      class="status low-stock hidden">
+                    EDITANDO
+                </span>
+
+            </div>
+
+
+            <div class="form-container">
+
+                <form id="inventoryForm">
+
+                    <input type="hidden" id="articleId">
+
+
+                    <div class="form-group">
+
+                        <label for="sku">
+                            Código / SKU
+                        </label>
+
+                        <input
+                            type="text"
+                            id="sku"
+                            placeholder="Ej. LAP-001"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Nombre del artículo
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            placeholder="Ej. Laptop HP 15"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="category">
+                            Categoría
+                        </label>
+
+                        <select id="category" required>
+
+                            <option value="">
+                                Seleccionar categoría
+                            </option>
+
+                            <option value="Computación">
+                                Computación
+                            </option>
+
+                            <option value="Electrónica">
+                                Electrónica
+                            </option>
+
+                            <option value="Oficina">
+                                Oficina
+                            </option>
+
+                            <option value="Accesorios">
+                                Accesorios
+                            </option>
+
+                            <option value="Otros">
+                                Otros
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="quantity">
+                                Cantidad
+                            </label>
+
+                            <input
+                                type="number"
+                                id="quantity"
+                                min="0"
+                                placeholder="0"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="minimumStock">
+                                Stock mínimo
+                            </label>
+
+                            <input
+                                type="number"
+                                id="minimumStock"
+                                min="0"
+                                value="5"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="price">
+                            Precio unitario (S/)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="price"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="buttons">
+
+                        <button
+                            type="submit"
+                            class="btn-primary"
+                            id="saveButton"
+                        >
+                            ➕ Guardar artículo
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn-secondary hidden"
+                            id="cancelButton"
+                        >
+                            Cancelar
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- LISTADO -->
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h2>
+                    Listado de inventario
+                </h2>
+
+                <button
+                    class="btn-danger"
+                    id="clearAll"
+                >
+                    🗑 Limpiar todo
+                </button>
+
+            </div>
+
+
+            <div class="inventory">
+
+                <!-- BUSCADOR -->
+
+                <div class="toolbar">
+
+                    <input
+                        class="search"
+                        type="text"
+                        id="search"
+                        placeholder="🔎 Buscar por nombre o SKU..."
+                    >
+
+
+                    <select
+                        class="category-filter"
+                        id="filterCategory"
+                    >
+
+                        <option value="all">
+                            Todas las categorías
+                        </option>
+
+                        <option value="Computación">
+                            Computación
+                        </option>
+
+                        <option value="Electrónica">
+                            Electrónica
+                        </option>
+
+                        <option value="Oficina">
+                            Oficina
+                        </option>
+
+                        <option value="Accesorios">
+                            Accesorios
+                        </option>
+
+                        <option value="Otros">
+                            Otros
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- TABLA -->
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>SKU</th>
+
+                                <th>Artículo</th>
+
+                                <th>Categoría</th>
+
+                                <th>Stock</th>
+
+                                <th>Precio</th>
+
+                                <th>Estado</th>
+
+                                <th>Acciones</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="inventoryTable">
+
+                        </tbody>
+
+                    </table>
+
+
+                    <div
+                        id="emptyMessage"
+                        class="empty hidden"
+                    >
+                        No hay artículos registrados.
+                    </div>
+
+                </div>
+
+
+                <footer>
+
+                    <span>
+                        Los datos se guardan automáticamente en el navegador.
+                    </span>
+
+                    <span id="articleCounter">
+                        0 artículos
+                    </span>
+
+                </footer>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   SISTEMA DE INVENTARIO
+   ========================================================= */
+
+
+/* CLAVE PARA LOCALSTORAGE */
+
+const STORAGE_KEY = "inventario_empresa";
+
+
+/* OBTENER ELEMENTOS */
+
+const form = document.getElementById("inventoryForm");
+
+const articleId = document.getElementById("articleId");
+
+const sku = document.getElementById("sku");
+
+const nameInput = document.getElementById("name");
+
+const category = document.getElementById("category");
+
+const quantity = document.getElementById("quantity");
+
+const minimumStock = document.getElementById("minimumStock");
+
+const price = document.getElementById("price");
+
+const inventoryTable =
+    document.getElementById("inventoryTable");
+
+const search =
+    document.getElementById("search");
+
+const filterCategory =
+    document.getElementById("filterCategory");
+
+const totalArticles =
+    document.getElementById("totalArticles");
+
+const totalUnits =
+    document.getElementById("totalUnits");
+
+const lowStock =
+    document.getElementById("lowStock");
+
+const inventoryValue =
+    document.getElementById("inventoryValue");
+
+const formTitle =
+    document.getElementById("formTitle");
+
+const editLabel =
+    document.getElementById("editLabel");
+
+const saveButton =
+    document.getElementById("saveButton");
+
+const cancelButton =
+    document.getElementById("cancelButton");
+
+const clearAll =
+    document.getElementById("clearAll");
+
+const emptyMessage =
+    document.getElementById("emptyMessage");
+
+const articleCounter =
+    document.getElementById("articleCounter");
+
+
+/* =========================================================
+   CARGAR INVENTARIO
+   ========================================================= */
+
+let inventory =
+    JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+    ) || [];
+
+
+/* =========================================================
+   FORMATEAR MONEDA
+   ========================================================= */
+
+function formatMoney(value) {
+
+    return Number(value).toLocaleString(
+        "es-PE",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
+
+}
+
+
+/* =========================================================
+   GENERAR ID
+   ========================================================= */
+
+function generateId() {
+
+    return Date.now().toString() +
+        Math.random().toString(16).substring(2);
+
+}
+
+
+/* =========================================================
+   GUARDAR EN LOCALSTORAGE
+   ========================================================= */
+
+function saveInventory() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(inventory)
+    );
+
+}
+
+
+/* =========================================================
+   DETERMINAR ESTADO DEL STOCK
+   ========================================================= */
+
+function getStockStatus(
+    currentStock,
+    minimum
+) {
+
+    if (currentStock === 0) {
+
+        return {
+            text: "Agotado",
+            className: "out-stock"
+        };
+
+    }
+
+
+    if (currentStock <= minimum) {
+
+        return {
+            text: "Stock bajo",
+            className: "low-stock"
+        };
+
+    }
+
+
+    return {
+        text: "Disponible",
+        className: "available"
+    };
+
+}
+
+
+/* =========================================================
+   ESCAPAR TEXTO HTML
+   ========================================================= */
+
+function escapeHTML(text) {
+
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =========================================================
+   MOSTRAR INVENTARIO
+   ========================================================= */
+
+function renderInventory() {
+
+    const searchText =
+        search.value
+            .toLowerCase()
+            .trim();
+
+    const selectedCategory =
+        filterCategory.value;
+
+
+    const filteredInventory =
+        inventory.filter(item => {
+
+            const matchesSearch =
+                item.sku
+                    .toLowerCase()
+                    .includes(searchText)
+                ||
+                item.name
+                    .toLowerCase()
+                    .includes(searchText);
+
+
+            const matchesCategory =
+                selectedCategory === "all"
+                ||
+                item.category === selectedCategory;
+
+
+            return matchesSearch &&
+                   matchesCategory;
+
+        });
+
+
+    inventoryTable.innerHTML = "";
+
+
+    if (filteredInventory.length === 0) {
+
+        emptyMessage.classList.remove(
+            "hidden"
+        );
+
+    } else {
+
+        emptyMessage.classList.add(
+            "hidden"
+        );
+
+    }
+
+
+    filteredInventory.forEach(item => {
+
+        const status =
+            getStockStatus(
+                item.quantity,
+                item.minimumStock
+            );
+
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                <span class="sku">
+                    ${escapeHTML(item.sku)}
+                </span>
+            </td>
+
+            <td>
+                <strong>
+                    ${escapeHTML(item.name)}
+                </strong>
+            </td>
+
+            <td>
+                ${escapeHTML(item.category)}
+            </td>
+
+            <td>
+                <span class="stock">
+                    ${item.quantity}
+                </span>
+            </td>
+
+            <td>
+                S/ ${formatMoney(item.price)}
+            </td>
+
+            <td>
+                <span class="status ${status.className}">
+                    ${status.text}
+                </span>
+            </td>
+
+            <td>
+
+                <button
+                    class="action-button"
+                    onclick="editArticle('${item.id}')"
+                >
+                    ✏️ Editar
+                </button>
+
+                <button
+                    class="action-button"
+                    onclick="deleteArticle('${item.id}')"
+                >
+                    🗑️
+                </button>
+
+            </td>
+
+        `;
+
+
+        inventoryTable.appendChild(row);
+
+    });
+
+
+    updateStatistics(
+        filteredInventory
+    );
+
+}
+
+
+/* =========================================================
+   ACTUALIZAR ESTADÍSTICAS
+   ========================================================= */
+
+function updateStatistics() {
+
+    const units =
+        inventory.reduce(
+            (total, item) =>
+                total + Number(item.quantity),
+            0
+        );
+
+
+    const low =
+        inventory.filter(
+            item =>
+                Number(item.quantity)
+                <=
+                Number(item.minimumStock)
+        ).length;
+
+
+    const value =
+        inventory.reduce(
+            (total, item) =>
+                total +
+                Number(item.quantity) *
+                Number(item.price),
+            0
+        );
+
+
+    totalArticles.textContent =
+        inventory.length;
+
+
+    totalUnits.textContent =
+        units;
+
+
+    lowStock.textContent =
+        low;
+
+
+    inventoryValue.textContent =
+        "S/ " + formatMoney(value);
+
+
+    articleCounter.textContent =
+        inventory.length +
+        (
+            inventory.length === 1
+            ? " artículo"
+            : " artículos"
+        );
+
+}
+
+
+/* =========================================================
+   REGISTRAR / ACTUALIZAR ARTÍCULO
+   ========================================================= */
+
+form.addEventListener(
+    "submit",
+    function(event) {
+
+        event.preventDefault();
+
+
+        const currentId =
+            articleId.value;
+
+
+        const newSKU =
+            sku.value.trim();
+
+
+        const newName =
+            nameInput.value.trim();
+
+
+        const newCategory =
+            category.value;
+
+
+        const newQuantity =
+            Number(quantity.value);
+
+
+        const newMinimumStock =
+            Number(minimumStock.value);
+
+
+        const newPrice =
+            Number(price.value);
+
+
+        /* VALIDAR SKU */
+
+        const duplicated =
+            inventory.some(item =>
+
+                item.sku.toLowerCase()
+                ===
+                newSKU.toLowerCase()
+
+                &&
+                item.id !== currentId
+
+            );
+
+
+        if (duplicated) {
+
+            alert(
+                "Ya existe un artículo con ese código / SKU."
+            );
+
+            return;
+
+        }
+
+
+        /* OBJETO */
+
+        const article = {
+
+            id:
+                currentId ||
+                generateId(),
+
+            sku:
+                newSKU,
+
+            name:
+                newName,
+
+            category:
+                newCategory,
+
+            quantity:
+                newQuantity,
+
+            minimumStock:
+                newMinimumStock,
+
+            price:
+                newPrice
+
+        };
+
+
+        /* ACTUALIZAR */
+
+        if (currentId) {
+
+            inventory =
+                inventory.map(
+                    item =>
+                        item.id === currentId
+                        ? article
+                        : item
+                );
+
+        }
+
+
+        /* NUEVO */
+
+        else {
+
+            inventory.push(
+                article
+            );
+
+        }
+
+
+        saveInventory();
+
+        renderInventory();
+
+        resetForm();
+
+    }
+);
+
+
+/* =========================================================
+   EDITAR ARTÍCULO
+   ========================================================= */
+
+function editArticle(id) {
+
+    const article =
+        inventory.find(
+            item => item.id === id
+        );
+
+
+    if (!article) {
+
+        return;
+
+    }
+
+
+    articleId.value =
+        article.id;
+
+
+    sku.value =
+        article.sku;
+
+
+    nameInput.value =
+        article.name;
+
+
+    category.value =
+        article.category;
+
+
+    quantity.value =
+        article.quantity;
+
+
+    minimumStock.value =
+        article.minimumStock;
+
+
+    price.value =
+        article.price;
+
+
+    formTitle.textContent =
+        "Actualizar artículo";
+
+
+    editLabel.classList.remove(
+        "hidden"
+    );
+
+
+    cancelButton.classList.remove(
+        "hidden"
+    );
+
+
+    saveButton.textContent =
+        "✓ Actualizar artículo";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =========================================================
+   ELIMINAR ARTÍCULO
+   ========================================================= */
+
+function deleteArticle(id) {
+
+    const article =
+        inventory.find(
+            item => item.id === id
+        );
+
+
+    if (!article) {
+
+        return;
+
+    }
+
+
+    const confirmation =
+        confirm(
+            `¿Deseas eliminar "${article.name}" del inventario?`
+        );
+
+
+    if (!confirmation) {
+
+        return;
+
+    }
+
+
+    inventory =
+        inventory.filter(
+            item => item.id !== id
+        );
+
+
+    saveInventory();
+
+    renderInventory();
+
+}
+
+
+/* =========================================================
+   LIMPIAR FORMULARIO
+   ========================================================= */
+
+function resetForm() {
+
+    form.reset();
+
+
+    articleId.value =
+        "";
+
+
+    minimumStock.value =
+        5;
+
+
+    formTitle.textContent =
+        "Registrar artículo";
+
+
+    editLabel.classList.add(
+        "hidden"
+    );
+
+
+    cancelButton.classList.add(
+        "hidden"
+    );
+
+
+    saveButton.textContent =
+        "➕ Guardar artículo";
+
+}
+
+
+/* =========================================================
+   BOTÓN CANCELAR
+   ========================================================= */
+
+cancelButton.addEventListener(
+    "click",
+    function() {
+
+        resetForm();
+
+    }
+);
+
+
+/* =========================================================
+   BUSCAR
+   ========================================================= */
+
+search.addEventListener(
+    "input",
+    function() {
+
+        renderInventory();
+
+    }
+);
+
+
+/* =========================================================
+   FILTRAR CATEGORÍA
+   ========================================================= */
+
+filterCategory.addEventListener(
+    "change",
+    function() {
+
+        renderInventory();
+
+    }
+);
+
+
+/* =========================================================
+   ELIMINAR TODO
+   ========================================================= */
+
+clearAll.addEventListener(
+    "click",
+    function() {
+
+        if (inventory.length === 0) {
+
+            alert(
+                "El inventario ya está vacío."
+            );
+
+            return;
+
+        }
+
+
+        const confirmation =
+            confirm(
+                "¿Estás seguro de eliminar TODOS los artículos? Esta acción no se puede deshacer."
+            );
+
+
+        if (!confirmation) {
+
+            return;
+
+        }
+
+
+        inventory = [];
+
+
+        saveInventory();
+
+        renderInventory();
+
+        resetForm();
+
+    }
+);
+
+
+/* =========================================================
+   DATOS DE EJEMPLO
+   ========================================================= */
+
+if (inventory.length === 0) {
+
+    inventory = [
+
+        {
+            id: generateId(),
+            sku: "LAP-001",
+            name: "Laptop HP 15",
+            category: "Computación",
+            quantity: 12,
+            minimumStock: 5,
+            price: 1899
+        },
+
+        {
+            id: generateId(),
+            sku: "MOU-002",
+            name: "Mouse inalámbrico",
+            category: "Accesorios",
+            quantity: 4,
+            minimumStock: 5,
+            price: 45.90
+        },
+
+        {
+            id: generateId(),
+            sku: "CAB-003",
+            name: "Cable HDMI 2.0",
+            category: "Electrónica",
+            quantity: 25,
+            minimumStock: 8,
+            price: 29.90
+        }
+
+    ];
+
+
+    saveInventory();
+
+}
+
+
+/* =========================================================
+   INICIAR SISTEMA
+   ========================================================= */
+
+renderInventory();
+
+</script>
+
+</body>
+</html>
